@@ -1,13 +1,15 @@
 const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
+const flash=require("connect-flash");
+const session=require('express-session');
 
 const app = express();
 
 //db config
 const db = require("./config/keys").mongoURI;
 
-//connect to mongo
+//connect to mongoDB
 mongoose
   .connect(db, { useNewUrlParser: true })
   .then(() => console.log("MongoDB connected......"))
@@ -20,7 +22,24 @@ app.set("view engine", "ejs");
 //body-parser
 app.use(express.urlencoded({ extended: false }));
 
-//router
+//express-session
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+}));
+
+//connecting flash
+app.use(flash());
+
+//global variables
+app.use((req,res,next)=>{
+  res.locals.success_msg=req.flash('success_msg');
+  res.locals.error_msg=req.flash('error_msg');
+  next();
+})
+
+//routers
 app.use("/", require("./routes/index"));
 app.use("/user", require("./routes/user"));
 
